@@ -125,7 +125,7 @@ bool searchList(char *item){
 
 void printThreadInfo(char* operation, char* value, bool success, pthread_t tid){
 	int len = strlen(value);
-	//value[len-1] = '\0'; //remove the endline char
+//	value[len-1] = '\0'; //remove the endline char
 	if(success)
 		printf("[%08x]    Success %s [ %s ] Retrievers : %i Adders : %i Deleters : %i\n" ,tid, operation,value,searchThreads,insertThreads,deleteThreads);
 	else	
@@ -212,27 +212,92 @@ int main(int argc , char** argv) {
 	int i=0;
 	char oper[NUMTHREADS] = "AARRDAADDDDRRRRDRRRR";
 	char words[NUMTHREADS][7] =  {"word1" , "word2" , "word1" , "word2","word1" , "word3" ,"word4" , "word3" ,"word4" , "word3" , "word1" , "word2" , "word2" , "word3" , "word1", "word4" , "word1" , "word1" , "word2" , "word2"  };
-	for(i=0;i<NUMTHREADS;i++) {
+	
+	FILE *fp;
+	fp = fopen("p2_input.txt", "r");
+	char operation='o';
+	char word[100][30];
+	int start = 0;
+	char line[100];
+//	fscanf(fp,"%[^\n]\n",line);
+//	printf("operation :%d  , value : \n",fscanf(fp,"%[^\n]\n",line));
+//	exit(1);
+
+	while( fscanf(fp,"%[^\n]\n",line) == 1 ) {
+		operation = line[0];
+		if(operation != 'M') {
+			strcpy(word[i],line + 2);
+//			printf("operation : %c , value : %s \n",operation,word[i]);
+		} else {
+//			printf("Mark\n");
+		}
+	
+                if(operation == 'A' )
+                        pthread_create(tid + i ,NULL,adders,(void *)word[i]);
+                else if(operation == 'D' )
+                        pthread_create(tid + i,NULL,deleters,(void *)word[i]);
+                else if(operation == 'R')
+                        pthread_create(tid + i,NULL,retrievers,(void *)word[i]);
+                else if (operation == 'M') {
+                        int j=0;
+                        for(j=0;j<i;j++) {
+                //      printf("Commited \n");
+                                pthread_join(tid[j],NULL);
+                        }
+                        printf("Commited \n");
+//                        start = i+1;
+			i=-1;
+
+		} else                   
+                        printf("Invalid operation\n");
+	
+
+		memset(line,0,100);
+//		memset(word[i],0,30);	
+		i++;
+	}
+
+	fclose(fp);
+	printList();
+/*
+	int start=0;
+//	int status=0;
+
+
+	for(i=0;i<NUMTHREADS && oper[i] != '\0' ;i++) {
 //		char *word = "new";
 		char *word = words[i];
+
+		if(i==8 || i==17) {
+			int j=0;
+			for(j=start;j<i;j++) {
+		//	printf("Commited \n");
+				pthread_join(tid[j],NULL);
+			}
+			printf("Commited \n");
+			start = i+1;
+			continue;
+		}
 		if(oper[i] == 'A' )
-			pthread_create(&tid[i],NULL,adders,(void *)word);
+			pthread_create(tid + i ,NULL,adders,(void *)word);
 		else if(oper[i] == 'D' )
-			pthread_create(&tid[i],NULL,deleters,(void *)word);
+			pthread_create(tid + i,NULL,deleters,(void *)word);
 		else if(oper[i] == 'R')
-			pthread_create(&tid[i],NULL,retrievers,(void *)word);
-		else
+			pthread_create(tid + i,NULL,retrievers,(void *)word);
+		else  			
 			printf("Invalid operation\n");
 	}
-	
+*/	
 	/*for(i=10;i<NUMTHREADS;i++) {
 		char *word = "new";
 		pthread_create(&tid[i],NULL,deleters,(void *)word);
 	}*/
 
-	for(i=0;i<NUMTHREADS;i++) {
+/*	for(i=start;i<NUMTHREADS;i++) {
 		pthread_join(tid[i],NULL);
 	}
+
 	printList();
+*/
 }
 
